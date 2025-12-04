@@ -3,7 +3,7 @@ import { Sidebar } from "./components/Sidebar";
 import { StrategyCloner } from "./components/agents/StrategyCloner";
 import { ContentGenerator } from "./components/agents/ContentGenerator";
 import { CustomerService } from "./components/agents/CustomerService";
-import { CustomerValuation } from "./components/agents/CustomerValuation";
+import CustomerValuation from "./components/agents/CustomerValuation";
 import { ProblemSolver } from "./components/agents/ProblemSolver";
 import { KnowledgeHub } from "./components/agents/KnowledgeHub";
 import { SalesAnalyst } from "./components/agents/SalesAnalyst";

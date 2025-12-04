@@ -19,9 +19,6 @@ import {
 import { Textarea } from "../ui/textarea";
 import {
   FileText,
-  Mail,
-  FileCheck,
-  Megaphone,
   Loader2,
   Copy,
   Download,
@@ -39,21 +36,21 @@ export function ContentGenerator() {
     topic: "",
     keywords: "",
     tone: "",
-    category: "AI Sales",
+    category: "Education",
     contentType: "",
     length: "",
   });
 
   const contentOptions: Record<string, string[]> = {
-    "AI Sales": [
-      "Iklan Produk",
-      "Brosur / Pamflet Promosi",
-      "Proposal Penawaran",
-      "Email Marketing",
-      "Surat Kontrak",
-      "Surat Resmi",
-      "Deskripsi Produk",
-      "Copywriting Sosial Media",
+    Education: [
+      "Ringkasan Materi",
+      "Modul Pembelajaran",
+      "Soal & Evaluasi",
+      "Rangkuman Bab",
+      "Slide Pembelajaran",
+      "Latihan Essay",
+      "Mindmap Konsep",
+      "Deskripsi Materi",
     ],
   };
 
@@ -73,13 +70,13 @@ export function ContentGenerator() {
 
     const userPrompt = `
       Kategori: ${formData.category}.
-      Jenis konten: ${formData.contentType}.
-      Topik: ${formData.topic}.
-      Kata kunci: ${formData.keywords}.
-      Tone: ${formData.tone}.
-      Panjang: ${formData.length}.
+      Bentuk Konten: ${formData.contentType}.
+      Topik Pembelajaran: ${formData.topic}.
+      Kata Kunci: ${formData.keywords}.
+      Tone Penulisan: ${formData.tone}.
+      Panjang Konten: ${formData.length}.
 
-      Tolong buatkan konten berdasarkan detail di atas.
+      Buat konten edukasi yang jelas, terstruktur, dan mudah dipahami berdasarkan detail di atas.
     `;
 
     try {
@@ -90,102 +87,98 @@ export function ContentGenerator() {
       });
 
       const data: ChatResponse = await response.json();
-
-      // ✅ Aman: cek dulu sebelum bersihin
-      setGeneratedContent(data.response ? cleanText(data.response) : "⚠️ AI tidak mengembalikan teks apapun.");
-    } catch (err: any) {
-      console.error(err);
-      setGeneratedContent("⚠️ Terjadi kesalahan koneksi ke server backend.");
+      setGeneratedContent(data.response ? cleanText(data.response) : "⚠️ AI tidak mengembalikan teks.");
+    } catch {
+      setGeneratedContent("⚠️ Tidak bisa terhubung ke server backend.");
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const copyToClipboard = () => {
-    if (generatedContent) {
-      navigator.clipboard.writeText(generatedContent);
-      alert("✅ Konten berhasil disalin ke clipboard!");
-    } else {
-      alert("⚠️ Belum ada konten untuk disalin.");
-    }
+    if (!generatedContent) return alert("⚠️ Tidak ada konten untuk disalin.");
+    navigator.clipboard.writeText(generatedContent);
+    alert("✅ Konten berhasil disalin!");
   };
 
-  const handleDownload = () => {
-    if (!generatedContent) {
-      alert("⚠️ Belum ada konten untuk diunduh.");
-      return;
-    }
+  const downloadContent = () => {
+    if (!generatedContent) return alert("⚠️ Tidak ada konten untuk diunduh.");
 
     const blob = new Blob([generatedContent], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${formData.topic || "hasil_konten"}.txt`;
-    document.body.appendChild(a);
+    a.download = `${formData.topic || "konten_edu"}.txt`;
     a.click();
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
   return (
     <div className="p-8">
       <div className="mb-8">
-        <h1>Content Generator & Sales Tool Kits</h1>
+        <h1>AI Education Content Generator</h1>
         <p className="text-muted-foreground mt-2">
-          Bikin konten sales (copywriting, iklan, brosur, email, proposal, surat menyurat, kontrak)
+          Buat konten pembelajaran otomatis: materi, ringkasan, soal, modul, atau evaluasi.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form */}
-        <Card className="lg:col-span-1">
+        
+        {/* FORM */}
+        <Card>
           <CardHeader>
             <CardTitle>Content Settings</CardTitle>
-            <CardDescription>Configure your content generation</CardDescription>
+            <CardDescription>Atur format konten pembelajaran</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
+
+            <div>
               <Label>Topik</Label>
-              <Input placeholder="Masukkan topik konten..." value={formData.topic} onChange={(e) => handleInputChange("topic", e.target.value)} />
+              <Input placeholder="Contoh: Ekosistem, Pythagoras..." 
+                value={formData.topic}
+                onChange={(e) => handleChange("topic", e.target.value)} />
             </div>
 
-            <div className="space-y-2">
-              <Label>Kata Kunci</Label>
-              <Input placeholder="Kata kunci" value={formData.keywords} onChange={(e) => handleInputChange("keywords", e.target.value)} />
+            <div>
+              <Label>Kata Kunci (Opsional)</Label>
+              <Input placeholder="Contoh: rantai makanan, simbiosis..." 
+                value={formData.keywords}
+                onChange={(e) => handleChange("keywords", e.target.value)} />
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label>Tone</Label>
-              <Select value={formData.tone} onValueChange={(v) => handleInputChange("tone", v)}>
-                <SelectTrigger><SelectValue placeholder="Pilih tone konten" /></SelectTrigger>
+              <Select value={formData.tone} onValueChange={(v: string) => handleChange("tone", v)}>
+                <SelectTrigger><SelectValue placeholder="Pilih gaya bahasa"/></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="sederhana">Sederhana</SelectItem>
                   <SelectItem value="formal">Formal</SelectItem>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="friendly">Friendly</SelectItem>
-                  <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="persuasive">Persuasive</SelectItem>
+                  <SelectItem value="child-friendly">Untuk Anak</SelectItem>
+                  <SelectItem value="motivational">Motivational</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label>Jenis Konten</Label>
-              <Select value={formData.contentType} onValueChange={(v) => handleInputChange("contentType", v)}>
-                <SelectTrigger><SelectValue placeholder="Pilih jenis konten" /></SelectTrigger>
+              <Select value={formData.contentType} onValueChange={(v: string) => handleChange("contentType", v)}>
+                <SelectTrigger><SelectValue placeholder="Pilih jenis konten"/></SelectTrigger>
                 <SelectContent>
-                  {contentOptions[formData.category].map((t) => (<SelectItem key={t} value={t}>{t}</SelectItem>))}
+                  {contentOptions[formData.category].map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="space-y-2">
+            <div>
               <Label>Panjang Konten</Label>
-              <Select value={formData.length} onValueChange={(v) => handleInputChange("length", v)}>
-                <SelectTrigger><SelectValue placeholder="Pilih panjang konten" /></SelectTrigger>
+              <Select value={formData.length} onValueChange={(v: string) => handleChange("length", v)}>
+                <SelectTrigger><SelectValue placeholder="Pilih panjang"/></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="short">Pendek (100–300 kata)</SelectItem>
                   <SelectItem value="medium">Sedang (300–600 kata)</SelectItem>
@@ -196,40 +189,41 @@ export function ContentGenerator() {
             </div>
 
             <Button onClick={handleGenerate} className="w-full" disabled={isGenerating || !formData.topic}>
-              {isGenerating ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Membuat...</> : "Generate Content"}
+              {isGenerating ? <><Loader2 className="animate-spin mr-2" /> Generating...</> : "Generate"}
             </Button>
           </CardContent>
         </Card>
 
-        {/* Output */}
+
+        {/* OUTPUT */}
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex justify-between">
             <div>
-              <CardTitle>Generated Content</CardTitle>
-              <CardDescription>AI-powered sales content ready to use</CardDescription>
+              <CardTitle>Generated Education Content</CardTitle>
+              <CardDescription>Konten siap digunakan untuk pembelajaran</CardDescription>
             </div>
+
             {generatedContent && (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={copyToClipboard}><Copy className="h-4 w-4" /></Button>
-                <Button variant="outline" size="sm" onClick={handleDownload}><Download className="h-4 w-4" /></Button>
-                <Button variant="outline" size="sm" onClick={handleGenerate} disabled={isGenerating}>
-                  <RefreshCw className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                </Button>
+                <Button variant="outline" size="sm" onClick={downloadContent}><Download className="h-4 w-4" /></Button>
+                <Button variant="outline" size="sm" onClick={handleGenerate} disabled={isGenerating}><RefreshCw className="h-4 w-4" /></Button>
               </div>
             )}
           </CardHeader>
+
           <CardContent>
             {generatedContent ? (
-              <Textarea value={generatedContent} onChange={(e) => setGeneratedContent(e.target.value)} className="min-h-[500px] h-full font-mono" />
+              <Textarea value={generatedContent} onChange={(e) => setGeneratedContent(e.target.value)} className="min-h-[500px]" />
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center h-full min-h-[500px]">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
                 <FileText className="w-16 h-16 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Konten yang dibuat AI akan muncul di sini</p>
-                <p className="text-sm">Isi form di sebelah kiri dan klik "Generate Content"</p>
+                <p className="text-muted-foreground">Hasil akan muncul di sini setelah generate.</p>
               </div>
             )}
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
