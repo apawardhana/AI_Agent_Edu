@@ -1,5 +1,10 @@
 # AI Agent Education
-
+###
+**buat branch**
+```
+git branch (nama_team)/dev
+git checkout (nama_team)/dev
+```
 ### Installation
 
 1. **Clone repository**
